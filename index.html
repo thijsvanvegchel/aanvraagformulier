@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data-aanvraag wegwijzer</title>
+<style>
+  /* Kleuren: vervang door de officiële IKNL-huisstijlcodes */
+  :root {
+    --primary: #13275b;      /* donkerblauw */
+    --primary-2: #24438f;
+    --accent: #d4145a;       /* accentkleur (knoppen/selectie) */
+    --accent-soft: #fbe6ee;
+    --bg: #f4f6fa; --card: #ffffff; --text: #13203d; --muted: #5b6680; --line: #dfe4ee;
+    --green: #1e7f4f; --green-soft: #e2f3ea;
+    --amber: #a8620a; --amber-soft: #fdf0dc;
+    --red: #b3261e; --red-soft: #fbe5e3;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif; }
+  header { background: var(--primary); color: #fff; }
+  header .wrap { padding: 28px 16px 32px; }
+  header h1 { margin: 0 0 6px; font-size: 1.75rem; }
+  header p { margin: 0; opacity: .85; max-width: 68ch; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 22px; }
+  .result { position: sticky; top: 16px; border-top: 5px solid var(--accent); }
+  fieldset { border: 0; padding: 0; margin: 0 0 26px; }
+  legend { font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 1.05rem; }
+  .hint { color: var(--muted); font-size: .88rem; margin: -4px 0 10px; }
+  .group-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 14px 0 6px; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 520px) { .opts { grid-template-columns: 1fr; } }
+  .opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line);
+    border-radius: 6px; cursor: pointer; background: #fff; }
+  .opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .opt input { margin-top: 4px; accent-color: var(--accent); }
+  .opt b { display: block; font-weight: 600; }
+  .opt small { display: block; color: var(--muted); line-height: 1.35; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg label { flex: 1 1 140px; text-align: center; padding: 9px 10px; border: 1px solid var(--line);
+    border-radius: 6px; cursor: pointer; font-size: .93rem; background: #fff; }
+  .seg label small { display: block; color: var(--muted); font-size: .78rem; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label:has(input:checked) { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .seg label:has(input:checked) small { color: #cfd8f0; }
+  .seg label:has(input:focus-visible), .opt:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .label { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; }
+  .route { font-size: 1.45rem; font-weight: 700; color: var(--primary); margin: 2px 0 4px; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 16px 0 6px; }
+  @media (max-width: 420px) { .kpis { grid-template-columns: 1fr; } }
+  .kpi { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .kpi .v { margin-top: 6px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: .86rem; }
+  .b-green { background: var(--green-soft); color: var(--green); }
+  .b-amber { background: var(--amber-soft); color: var(--amber); }
+  .b-red { background: var(--red-soft); color: var(--red); }
+  .b-blue { background: #e6ebf7; color: var(--primary); }
+  h3 { font-size: 1rem; color: var(--primary); margin: 18px 0 8px; }
+  ul.list { margin: 0; padding-left: 18px; }
+  ul.list li { margin-bottom: 5px; }
+  .alert { border-left: 4px solid var(--red); background: var(--red-soft); padding: 10px 12px; border-radius: 4px; margin: 12px 0 0; font-size: .93rem; }
+  .alert.info { border-color: var(--primary-2); background: #e6ebf7; }
+  .btn { display: inline-block; margin-top: 16px; background: var(--accent); color: #fff; text-decoration: none;
+    padding: 10px 18px; border-radius: 4px; font-weight: 600; }
+  .btn:hover { filter: brightness(.93); }
+  .disclaimer { margin-top: 16px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Wegwijzer data-aanvraag</h1>
+    <p>Stel uw aanvraag samen uit één of meer databronnen en zie direct of er kosten zijn, welke juridische voorwaarden gelden en hoe lang het ongeveer duurt.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <form class="card" id="f" onsubmit="return false">
+
+      <fieldset>
+        <legend>1. Wie vraagt aan en waarvoor?</legend>
+        <div class="seg">
+          <label><input type="radio" name="goal" value="onderzoek" checked>Onderzoek / statistiek<small>arts, onderzoeker, beleid</small></label>
+          <label><input type="radio" name="goal" value="zorg">Verbeteren van zorg<small>ziekenhuis, netwerk</small></label>
+          <label><input type="radio" name="goal" value="student">Student / particulier</label>
+          <label><input type="radio" name="goal" value="commercieel">Commercieel</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>2. Welke data wilt u aanvragen?</legend>
+        <p class="hint">Combineren mag: kies alle bronnen die u nodig heeft.</p>
+
+        <div class="group-title">Nederlandse Kankerregistratie (NKR)</div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" name="src" value="nkr" checked><span><b>Kanker – basisgegevens</b><small>Diagnose, tumorkenmerken, behandeling, overleving</small></span></label>
+          <label class="opt"><input type="checkbox" name="src" value="pz"><span><b>Palliatieve zorg</b><small>Uitgezaaide kanker, zorg in de laatste levensfase</small></span></label>
+        </div>
+
+        <div class="group-title">Kwaliteit van leven</div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" name="src" value="profiel"><span><b>PROFIEL</b><small>Vragenlijsten van patiënten over kwaliteit van leven</small></span></label>
+        </div>
+
+        <div class="group-title">Koppelen met andere bronnen</div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" name="src" value="cbs"><span><b>CBS</b><small>Sociaaleconomische en sterftegegevens</small></span></label>
+          <label class="opt"><input type="checkbox" name="src" value="palga"><span><b>Palga</b><small>Pathologiegegevens</small></span></label>
+          <label class="opt"><input type="checkbox" name="src" value="cohort"><span><b>Cohort (PLCRC, PACAP, POCOP)</b><small>Bestaande onderzoekscohorten</small></span></label>
+          <label class="opt"><input type="checkbox" name="src" value="nieuw"><span><b>Andere / eigen bron</b><small>Nog niet eerder gekoppelde dataset</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>3. Hoe gedetailleerd?</legend>
+        <div class="seg">
+          <label><input type="radio" name="level" value="basis">Basiscijfers<small>incidentie, prevalentie</small></label>
+          <label><input type="radio" name="level" value="tabel" checked>Tabellen op maat<small>geaggregeerd</small></label>
+          <label><input type="radio" name="level" value="patient">Patiëntniveau<small>gepseudonimiseerd</small></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>4. Hoeveel?</legend>
+        <p class="hint">Aantal kankersoorten</p>
+        <div class="seg">
+          <label><input type="radio" name="tumors" value="1" checked>1</label>
+          <label><input type="radio" name="tumors" value="2">2 – 3</label>
+          <label><input type="radio" name="tumors" value="4">4 of meer</label>
+        </div>
+        <p class="hint" style="margin-top:14px">Ziekenhuizen</p>
+        <div class="seg">
+          <label><input type="radio" name="hosp" value="nl" checked>Landelijk / regionaal</label>
+          <label><input type="radio" name="hosp" value="1">Eén ziekenhuis</label>
+          <label><input type="radio" name="hosp" value="meer">Meerdere, per ziekenhuis</label>
+        </div>
+      </fieldset>
+
+      <fieldset style="margin-bottom:0">
+        <legend>5. Extra werk nodig?</legend>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="extraItems"><span><b>Extra variabelen registreren</b><small>Gegevens die nu nog niet in de NKR staan</small></span></label>
+          <label class="opt"><input type="checkbox" id="extraWork"><span><b>Niet-standaard bewerking</b><small>Bijv. analyses of rapportage door IKNL</small></span></label>
+        </div>
+      </fieldset>
+    </form>
+
+    <aside class="card result" aria-live="polite">
+      <div class="label">Type aanvraag</div>
+      <div class="route" id="route">–</div>
+      <div class="hint" id="routeNote" style="margin:0"></div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="label">Kosten</div><div class="v" id="cost"></div></div>
+        <div class="kpi"><div class="label">Juridisch</div><div class="v" id="legal"></div></div>
+        <div class="kpi"><div class="label">Doorlooptijd</div><div class="v" id="time"></div></div>
+      </div>
+
+      <div id="alerts"></div>
+
+      <h3>Kosten</h3>
+      <ul class="list" id="costList"></ul>
+
+      <h3>Voorwaarden en toetsing</h3>
+      <ul class="list" id="legalList"></ul>
+
+      <a class="btn" id="cta" href="https://gegevensaanvraag.iknl.nl/" target="_blank" rel="noopener">Naar het aanvraagformulier</a>
+
+      <p class="disclaimer">Indicatie op basis van de informatie over gegevensaanvragen op iknl.nl. Aan deze uitkomst kunnen geen rechten worden ontleend; de definitieve beoordeling volgt na uw aanvraag. Vragen? gegevensaanvraag@iknl.nl</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===== Configuratie: pas teksten, doorlooptijden en regels hier aan ===== */
+const ROUTES = {
+  basis:         { name: 'Basiscijfers',                 time: 'ca. 2 weken' },
+  standaard:     { name: 'Standaardaanvraag',            time: 'ca. 3 maanden' },
+  complex:       { name: 'Complexe aanvraag',            time: 'ca. 4 maanden' },
+  koppeling:     { name: 'Standaardkoppeling',           time: 'ca. 4 maanden' },
+  koppelingPlus: { name: 'Nieuwe of complexe koppeling', time: 'ca. 6 maanden' }
+};
+const LINKS = { cbs: 'CBS', palga: 'Palga', cohort: 'het cohort', profiel: 'PROFIEL', nieuw: 'de nieuwe bron' };
+const NKR_TOOL = 'https://nkr-cijfers.iknl.nl/viewer';
+const FORM = 'https://gegevensaanvraag.iknl.nl/';
+
+const $ = id => document.getElementById(id);
+const val = n => document.querySelector(`input[name=${n}]:checked`)?.value;
+const badge = (cls, txt) => `<span class="badge ${cls}">${txt}</span>`;
+
+function calc() {
+  const src = [...document.querySelectorAll('input[name=src]:checked')].map(i => i.value);
+  const goal = val('goal'), level = val('level'), tumors = +val('tumors'), hosp = val('hosp');
+  const extraItems = $('extraItems').checked, extraWork = $('extraWork').checked;
+
+  const links = src.filter(s => s in LINKS);
+  const alerts = [], costs = [], legal = [];
+
+  if (!src.length) return render({ empty: true });
+
+  /* --- Type aanvraag + doorlooptijd --- */
+  let route;
+  if (links.includes('nieuw') || links.length >= 2) route = 'koppelingPlus';
+  else if (links.length === 1) route = 'koppeling';
+  else if (tumors > 1 || hosp === 'meer' || src.length > 1) route = 'complex';
+  else if (level === 'basis' && !extraItems && !extraWork) route = 'basis';
+  else route = 'standaard';
+  if (extraItems && route !== 'koppelingPlus') route = route === 'koppeling' ? 'koppelingPlus' : 'complex';
+
+  let routeNote = src.length > 1 ? `Combinatie van ${src.length} databronnen.` : 'Eén databron.';
+  if (links.length) routeNote += ' Doorlooptijd hangt mede af van de koppelpartner.';
+
+  /* --- Kosten --- */
+  let costLevel = 'gratis';
+  costs.push('Een standaardgegevensaanvraag is kosteloos.');
+  if (extraWork) { costLevel = 'offerte'; costs.push('Niet-standaard bewerking of analyse: u ontvangt vooraf een offerte.'); }
+  if (extraItems) { costLevel = 'offerte'; costs.push('Registratie van extra variabelen: u ontvangt vooraf een offerte.'); }
+  links.forEach(l => {
+    if (costLevel === 'gratis') costLevel = 'derde';
+    costs.push(`Koppelen zelf is kosteloos, maar ${LINKS[l]} kan kosten rekenen.`);
+  });
+
+  /* --- Juridisch --- */
+  let legalLevel = 'standaard';
+  legal.push('De algemene voorwaarden voor gegevensleveringen zijn van toepassing.');
+  legal.push('Data mag alleen voor het doel in de aanvraag worden gebruikt; hergebruik vraagt een nieuwe aanvraag.');
+  if (level === 'patient') { legalLevel = 'extra'; legal.push('Gegevens op patiëntniveau kunnen herleidbaar zijn: aanvullende juridische voorwaarden.'); }
+  if (hosp !== 'nl') { legalLevel = 'extra'; legal.push('Uitsplitsing per ziekenhuis kan herleidbaar zijn naar behandelaars: aanvullende juridische voorwaarden.'); }
+  if (links.length) { legalLevel = 'extra'; legal.push('Bij koppelen gelden ook afspraken met de externe partij.'); }
+  if (src.includes('profiel') && level === 'patient') legal.push('Vragenlijstdata is door patiënten zelf ingevuld; gebruik moet passen binnen hun toestemming.');
+  if (level === 'patient' || links.length) legal.push('Wetenschappelijke toetsing van de onderzoeksvraag kan onderdeel zijn van de beoordeling.');
+
+  /* --- Doel --- */
+  let cta = { href: FORM, text: 'Naar het aanvraagformulier' };
+  if (goal === 'student') {
+    alerts.push(['info', 'Als student of particulier kunt u zelf tabellen en grafieken maken met de tool NKR Cijfers. Een gegevensaanvraag loopt via een arts, onderzoeker of instelling.']);
+    cta = { href: NKR_TOOL, text: 'Naar NKR Cijfers' };
+  }
+  if (goal === 'commercieel') {
+    legalLevel = 'nee';
+    alerts.push(['', 'Data wordt alleen verstrekt voor wetenschappelijk onderzoek of statistiek die bijdraagt aan betere oncologische en palliatieve zorg. Een puur commercieel doel valt daarbuiten. Neem bij twijfel contact op.']);
+  }
+
+  render({ route, routeNote, costLevel, legalLevel, costs, legal, alerts, cta });
+}
+
+function render(r) {
+  if (r.empty) {
+    $('route').textContent = '–';
+    $('routeNote').textContent = 'Kies minimaal één databron.';
+    ['cost','legal','time','alerts','costList','legalList'].forEach(id => $(id).innerHTML = '');
+    return;
+  }
+  $('route').textContent = ROUTES[r.route].name;
+  $('routeNote').textContent = r.routeNote;
+  $('time').innerHTML = badge('b-blue', ROUTES[r.route].time);
+  $('cost').innerHTML = {
+    gratis:  badge('b-green', 'Geen kosten'),
+    derde:   badge('b-amber', 'Mogelijk, via derde'),
+    offerte: badge('b-red', 'Offerte')
+  }[r.costLevel];
+  $('legal').innerHTML = {
+    standaard: badge('b-green', 'Standaard'),
+    extra:     badge('b-amber', 'Aanvullend'),
+    nee:       badge('b-red', 'Buiten voorwaarden')
+  }[r.legalLevel];
+  $('alerts').innerHTML = r.alerts.map(([c, t]) => `<div class="alert ${c}">${t}</div>`).join('');
+  $('costList').innerHTML = r.costs.map(x => `<li>${x}</li>`).join('');
+  $('legalList').innerHTML = r.legal.map(x => `<li>${x}</li>`).join('');
+  $('cta').href = r.cta.href; $('cta').textContent = r.cta.text;
+}
+
+$('f').addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
