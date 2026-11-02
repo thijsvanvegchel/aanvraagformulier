@@ -9,12 +9,13 @@
   :root {
     --primary: #13275b;      /* donkerblauw */
     --primary-2: #24438f;
-    --accent: #d4145a;       /* accentkleur (knoppen/selectie) */
-    --accent-soft: #fbe6ee;
+    --accent: #1f74c4;       /* accentkleur (knoppen/selectie) */
+    --accent-soft: #e5f0fb;
     --bg: #f4f6fa; --card: #ffffff; --text: #13203d; --muted: #5b6680; --line: #dfe4ee;
-    --green: #1e7f4f; --green-soft: #e2f3ea;
-    --amber: #a8620a; --amber-soft: #fdf0dc;
-    --red: #b3261e; --red-soft: #fbe5e3;
+    /* statuskleuren in blauwtinten: licht = gunstig, donker = aandacht */
+    --green: #1f5f99; --green-soft: #e3eff9;
+    --amber: #ffffff; --amber-soft: #4a86c5;
+    --red: #ffffff; --red-soft: #13275b;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text);
@@ -62,7 +63,7 @@
   h3 { font-size: 1rem; color: var(--primary); margin: 18px 0 8px; }
   ul.list { margin: 0; padding-left: 18px; }
   ul.list li { margin-bottom: 5px; }
-  .alert { border-left: 4px solid var(--red); background: var(--red-soft); padding: 10px 12px; border-radius: 4px; margin: 12px 0 0; font-size: .93rem; }
+  .alert { border-left: 4px solid var(--primary); background: #dbe6f5; padding: 10px 12px; border-radius: 4px; margin: 12px 0 0; font-size: .93rem; }
   .alert.info { border-color: var(--primary-2); background: #e6ebf7; }
   .btn { display: inline-block; margin-top: 16px; background: var(--accent); color: #fff; text-decoration: none;
     padding: 10px 18px; border-radius: 4px; font-weight: 600; }
